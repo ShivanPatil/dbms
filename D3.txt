@@ -1,0 +1,167 @@
+SQL> create table employee(eid int primary key,
+ename varchar(10),
+address varchar(10),
+supeid int,
+dno int);
+SQL> alter table employeee add constraint fk_supeid foreign 
+key(supeid) references employeee(eid));
+SQL> create table department(dno int primary key,
+dname varchar(20),
+dlocation varchar(10),
+mgrid int references employeee(eid));
+SQL> alter table employeee add constraint fk_dno foreign key(dno) 
+references department(dno));
+SQL> create table project(pno int primary key,
+pname varchar(20),
+plocation varchar(20),
+dno int references department(dno));
+SQL> create table dependent(name varchar(20),
+gender varchar(6),
+age int,
+addr varchar(20),
+eid int references employeee(eid),
+primary key(name,eid));
+SQL> create table empproj(eid int references employeee(eid),
+pno int references project(pno),
+hpw int,
+primary key(eid,pno));
+Nagesh B S, Asst. Prof., Dept. of MCA, RNSIT, Bengaluru phone:9844032238
+SQL> create table empphno(eid int references employeee(eid),
+phno int,
+primary key(eid,phno));
+SQL> desc employee;
+Name Null? Type
+----------------------------------------- -------- -----------------
+EID NOT NULL NUMBER(38)
+NAME VARCHAR2(30)
+ADDRESS VARCHAR2(30)
+SUPEID NUMBER(38)
+DNO NUMBER(38)
+SQL> desc department;
+Name Null? Type
+----------------------------------------- -------- -----------------
+DNO NOT NULL NUMBER(38)
+DNAME VARCHAR2(20)
+DLOCATION VARCHAR2(10)
+MGRID NUMBER(38)
+SQL> desc project;
+Name Null? Type
+----------------------------------------- -------- -----------------
+PNO NOT NULL NUMBER(38)
+PNAME VARCHAR2(20)
+PLOCATION VARCHAR2(20)
+DNO NUMBER(38)
+SQL> desc dependent;
+Name Null? Type
+----------------------------------------- -------- -----------------
+NAME NOT NULL VARCHAR2(20)
+GENDER VARCHAR2(6)
+AGE NUMBER(38)
+ADDR VARCHAR2(20)
+EID NOT NULL NUMBER(38)
+SQL> desc empproj;
+Name Null? Type
+----------------------------------------- -------- -----------------
+EID NOT NULL NUMBER(38)
+PNO NOT NULL NUMBER(38)
+HPW NUMBER(38)
+SQL> desc empphno;
+Name Null? Type
+----------------------------------------- -------- -----------------
+EID NOT NULL NUMBER(38)
+PHNO NOT NULL NUMBER(38)
+SQL> select * from employee;
+ EID NAME ADDRESS SUPEID DNO 
+---------- ---------- ---------- ---------- ----------- 
+ 1 priya bangalore 5 200 
+ 2 sindu davangere 1 400 
+ 3 teertha sirsi 2 300 
+Nagesh B S, Asst. Prof., Dept. of MCA, RNSIT, Bengaluru phone:9844032238
+ 4 spurthy chikmangalore 3 200 
+ 5 raghavi bangalore 4 500 
+ 
+SQL> select * from department;
+ DNO DNAME DLOCATION MGRID 
+---------- -------------------- ---------- ---------- 
+ 100 mca blore 4 
+ 200 mba mlore 5 
+ 300 cse mumbai 2 
+ 400 mech delhi 3 
+ 500 ece chennai 1 
+SQL> select * from project;
+ PNO PNAME PLOCATION DNO 
+---------- -------------------- -------------------- ---------- 
+ 111 student blore 100 
+ 222 library madurai 300 
+ 333 hotel chennai 100 
+ 444 railway delhi 500 
+ 555 airline ranchi 400 
+ 5 sp mysore 100 
+ 10 raji kolkata 200 
+SQL> select * from dependent;
+NAME GENDER AGE ADDR EID 
+-------------------- ------ ---------- -------------------- ---------- 
+priya f 20 mumbai 1 
+divya f 19 blore 2 
+priyanka f 18 madurai 3 
+sarvan m 24 delhi 3 
+jothi f 40 madurai 5 
+lakshmi f 23 udupi 1 
+SQL> select * from empproj;
+ EID PNO HPW 
+---------- ---------- ---------- 
+ 1 111 5 
+ 3 222 4 
+ 2 333 7 
+ 4 111 10 
+ 5 444 20 
+ 1 5 4 
+ 1 10 8 
+SQL> select * from empphno;
+ EID PHNO 
+---------- ---------- 
+ 3 9025678934 
+ 4 9807654323 
+ 5 8907654323 
+Nagesh B S, Asst. Prof., Dept. of MCA, RNSIT, Bengaluru phone:9844032238
+ 2 7896897654 
+ 1 9087654321 
+Query 1. select * from employee where eid in(select w1.eid from 
+empproj w1,empproj w2 where w1.pno=5 and w2.pno=10 and 
+w1.eid=w2.eid);
+ EID NAME ADDRESS SUPEID DNO 
+---------- ---------- ---------- -------- ----- 
+ 1 priya bangalore 5 200 
+Query 2. select * from employee where eid in(select eid from 
+dependent group by eid having count(eid)>=2);
+ EID NAME ADDRESS SUPEID DNO 
+---------- -------- ---------- ------- ------ 
+ 1 priya bangalore 5 200 
+ 3 teertha sirsi 2 300 
+Query 3. select pname from project where pno in(select pno from 
+empproj group by pno having count(pno)=(select max(count(pno)) from 
+empproj group by pno))
+PNAME 
+-------------------- 
+student 
+Query 4. select * from employee where eid not in (select eid from 
+dependent);
+ EID NAME ADDRESS SUPEID DNO 
+---------- -------- --------- --------- ---------- 
+ 4 spurthy chikmangalore 3 200 
+Query 5. select * from employee where eid in(select eid from empproj 
+group by eid having sum(hpw)= 2 (select max(sum(hpw)) from empproj 
+group by eid));
+ EID NAME ADDRESS SUPEID DNO 
+---------- -------- ---------- -------- ------ 
+ 5 raghavi bangalore 4 500 
+Query 6.
+create view empcount(dno,no_of_emp) as select dno,count(dno) from 
+employeee group by dno;
+SQL> select * from empcount;
+ DNO NO_OF_EMP 
+---------- ---------- 
+ 200 2 
+ 300 1 
+ 400 1 
+ 500 1

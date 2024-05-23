@@ -1,0 +1,135 @@
+create table tourist_place
+(tpid number primary key,
+history varchar(20),
+kilometers number(3)
+,state varchar(20),
+tpname varchar(20));
+create table tourist(tid number primary key,
+country varchar(20),
+age number,
+tname varchar(20));
+create table visits
+(tpid number(3) references tourist_place(tpid),
+tid number references tourist(tid),
+vdate date,
+primary key(tpid,tid));
+create table email
+(tid number references tourist(tid),
+email varchar(20),primary key(tid,email));
+desc tourist_place;
+Name Null? Type
+----------------------------------------- -------- ---------------------
+TPID NOT NULL NUMBER
+HISTORY VARCHAR2(20)
+KILOMETERS NUMBER
+STATE VARCHAR2(20)
+TPNAME VARCHAR2(20)
+desc tourist;
+Name Null? Type
+----------------------------------------- -------- ---------------------
+TID NOT NULL NUMBER
+COUNTRY VARCHAR2(20)
+AGE NUMBER
+TNAME VARCHAR2(20)
+desc visits;
+Name Null? Type
+----------------------------------------- -------- ---------------------
+TPID NOT NULL NUMBER
+TID NOT NULL NUMBER
+VDATE DATE
+desc email;
+Name Null? Type
+----------------------------------------- -------- ---------------------
+TID NUMBER
+EMAIL VARCHAR2(20)
+SQL> insert into
+tourist_place(tpid,history,kilometers,state,tpname)values('11','beauty','
+160','karnataka','ooty');
+1 row created.
+Nagesh B S, Asst. Prof., Dept. of MCA, RNSIT, Bengaluru phone:9844032238
+SQL> select * from tourist_place;
+ TPID HISTORY KILOMETERS STATE TPNAME 
+---------- -------------------- ---------- ------------- --------- 
+ 11 beauty 160 karnataka ooty 
+ 12 monuments 270 kerala beluru 
+ 13 beach 360 tamilnadu marina 
+ 
+SQL> insert into 
+tourist(tid,country,age,tname)values('22','india','34','prakash');
+1 row created.
+SQL> select * from tourist;
+ TID COUNTRY AGE TNAME 
+---------- -------------------- ---------- -------------------- 
+ 22 india 34 prakash 
+ 23 orissa 28 bhanu 
+ 24 india 30 nagesh 
+SQL> insert into visits values('&tpid','&tid','&vdate');
+Enter value for tpid: 12
+Enter value for tid: 23
+Enter value for vdate: 13-nov-2014
+old 1: insert into visits values('&tpid','&tid','&vdate')
+new 1: insert into visits values('12','23','13-nov-2014')
+1 row created.
+SQL> select * from visits;
+TPID TID VDATE
+---- ---------- ---------
+ 12 23 13-NOV-14
+ 11 24 24-JUN-13
+ 13 22 25-SEP-11
+ 11 23 23-FEB-10
+ 13 23 12-JAN-10
+ 14 24 10-JAN-17
+SQL> insert into email values('&tid','&email');
+Enter value for tid: 23
+Enter value for email: bhanu12@gmail.com
+old 1: insert into email values('&tid','&email')
+new 1: insert into email values('23','bhanu12@gmail.com')
+1 row created.
+SQL> select * from email;
+ TID EMAIL 
+---------- -------------------- 
+ 23 bhanu12@gmail.com 
+ 22 prakash242@gmail.com 
+ 24 nageshh@gmail.com 
+Nagesh B S, Asst. Prof., Dept. of MCA, RNSIT, Bengaluru phone:9844032238
+Query 1:
+select state from tourist_place group by state having 
+count(state)=(select max(count(state)) from tourist_place group by 
+state);
+STATE
+--------------------
+karnataka
+query 2: 
+select * from tourist_place where tpid in (select tpid from visits group 
+by tpid having count(tpid)= (select max(count(tpid)) from visits group by 
+tpid));
+ TPID HISTORY KILOMETERS STATE TPNAME
+--------- -------------------- ---------- -------------------- ----------
+ 11 beauty 160 karnataka ooty
+ 13 beach 360 tamilnadu marina
+query 3:
+ select * from tourist t where t.tid in
+(select tid from visits join tourist_place on 
+visits.tpid=tourist_place.tpid where state='karnataka'
+ group by tid having count(state) in (select count(state ) from 
+tourist_place where state='karnataka') );
+ TID COUNTRY AGE TNAME
+------ -------------------- ---------- --------------------
+ 24 india 30 nagesh
+query 4:
+select * from tourist t where t.tid in (select tid from visits join 
+tourist_place on visits.tpid=tourist_place.tpid
+ group by tid having count(distinct state)
+in (select count(distinct state ) from tourist_place) );
+ TID COUNTRY AGE TNAME
+----- -------------------- ---------- --------------------
+ 23 orissa 28 bhanu
+query 5:
+select * from tourist_place where tpid in (
+select tpid from visits join tourist on visits.tid=tourist.tid
+group by tpid having count(distinct country)=
+(select count(distinct country) from tourist));
+TPID HISTORY KILOMETERS STATE TPNAME
+----- -------------------- ---------- -------------------- --------------
+ 11 beauty 160 karnataka ooty
+ 13 beach 360 tamilnadu marin
